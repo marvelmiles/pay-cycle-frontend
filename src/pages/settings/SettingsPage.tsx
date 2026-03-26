@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
 import { Camera, Building2, User as UserIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "Required"),
@@ -27,6 +28,13 @@ export const SettingsPage: React.FC = () => {
   const [editingBusiness, setEditingBusiness] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [businessLogo, setBusinessLogo] = useState<File | null>(null);
+
+  const profileData = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => profileService.getMe(),
+  })
+
+  console.log(profileData.data);
 
   const profileForm = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -49,9 +57,11 @@ export const SettingsPage: React.FC = () => {
     onSuccess: (res) => {
       if (res.data.success) {
         toast.success(res.data.message || "Profile updated");
-        if (res.data.data) {
-          updateUser(res.data.data);
-        }
+        updateUser({
+          ...user,
+          firstName: profileForm.getValues().firstName,
+          lastName: profileForm.getValues().lastName,
+        } as any);
         setEditingProfile(false);
         setProfileImage(null);
       } else {
@@ -69,9 +79,11 @@ export const SettingsPage: React.FC = () => {
     onSuccess: (res) => {
       if (res.data.success) {
         toast.success(res.data.message || "Business updated");
-        if (res.data.data) {
-          updateBusiness(res.data.data);
-        }
+        updateBusiness({
+          ...business,
+          name: businessForm.getValues().name,
+          slug: businessForm.getValues().slug,
+        } as any);
         setEditingBusiness(false);
         setBusinessLogo(null);
       } else {

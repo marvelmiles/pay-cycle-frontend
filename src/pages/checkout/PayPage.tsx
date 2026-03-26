@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { formatCardNumber, formatExpiry, detectNetwork } from "@/utils/utils";
 import {
-  Zap,
   Shield,
   Lock,
   CheckCircle,
@@ -48,6 +48,7 @@ interface ProductData {
 interface BusinessData {
   name: string;
   logo?: string;
+  image?: string;
   email?: string;
   _id: string;
 }
@@ -62,23 +63,6 @@ interface PaymentLinkData {
   maxUses?: number;
   useCount: number;
 }
-
-// interface InterswitchConfig {
-//   merchantCode: string;
-//   payableCode: string;
-//   transactionReference: string;
-//   amount: number;
-//   currencyCode: string;
-//   customerEmail: string;
-//   customerName: string;
-//   redirectUrl: string;
-//   siteName: string;
-//   mode: string;
-// }
-
-// ─────────────────────────────────────────────
-// SCHEMAS
-// ─────────────────────────────────────────────
 
 const detailsSchema = z.object({
   firstName: z.string().min(1, "Required"),
@@ -101,18 +85,7 @@ const cardSchema = z.object({
 });
 type CardForm = z.infer<typeof cardSchema>;
 
-// ─────────────────────────────────────────────
-// CARD NETWORK DETECTOR
-// ─────────────────────────────────────────────
 type CardNetwork = "visa" | "mastercard" | "verve" | null;
-
-function detectNetwork(num: string): CardNetwork {
-  const n = num.replace(/\s/g, "");
-  if (/^4/.test(n)) return "visa";
-  if (/^(50|5[1-5]|2[2-7])/.test(n)) return "mastercard";
-  if (/^(6[3-9]|650|5061)/.test(n)) return "verve";
-  return null;
-}
 
 const NetworkLogo: React.FC<{ network: CardNetwork; className?: string }> = ({
   network,
@@ -165,22 +138,6 @@ const NetworkLogo: React.FC<{ network: CardNetwork; className?: string }> = ({
 };
 
 // ─────────────────────────────────────────────
-// FORMAT HELPERS
-// ─────────────────────────────────────────────
-function formatCardNumber(raw: string) {
-  return raw
-    .replace(/\D/g, "")
-    .slice(0, 19)
-    .replace(/(.{4})/g, "$1 ")
-    .trim();
-}
-function formatExpiry(raw: string) {
-  const digits = raw.replace(/\D/g, "").slice(0, 4);
-  if (digits.length <= 2) return digits;
-  return digits.slice(0, 2) + "/" + digits.slice(2);
-}
-
-// ─────────────────────────────────────────────
 // STEP INDICATOR (2 steps)
 // ─────────────────────────────────────────────
 const StepBubble: React.FC<{
@@ -217,7 +174,7 @@ const Connector = () => (
 );
 
 // ─────────────────────────────────────────────
-// FIELD COMPONENTS (inline, no external deps)
+// FIELD COMPONENTS
 // ─────────────────────────────────────────────
 const Field: React.FC<{
   label: string;
@@ -267,18 +224,6 @@ const CardBadges = () => (
   </div>
 );
 
-// ─────────────────────────────────────────────
-// MAIN PAY PAGE
-// ─────────────────────────────────────────────
-
-// test card
-
-// const options = {
-//   pan: "5060990580000217499",
-//   expDate: "5003",
-//   cvv: "111",
-//   pin: "1111",
-// };
 
 const RedirectButton: React.FC<{
   onClick: () => void;
@@ -356,14 +301,6 @@ export const PayPage: React.FC = () => {
     },
   });
 
-  // {
-  //     cvv: "111",
-  //     expiry: "03/50",
-  //     cardNumber: "5060990580000217499",
-  //     cardPin: "1111",
-  //   },
-
-  // ── LOADING / ERROR states ──────────────────
   if (pageLoading)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -498,20 +435,29 @@ export const PayPage: React.FC = () => {
     />
   );
 
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
         {/* ── Top bar ── */}
         <header className="border-b border-white/10 backdrop-blur-sm bg-white/5">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Zap className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">PayCycle</span>
+            <div className="flex items-center gap-3">
+              {(business.image || business.logo) ? (
+                <img
+                  src={business.image || business.logo}
+                  alt={business.name}
+                  className="w-8 h-8 rounded-lg object-cover bg-white"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-white text-sm">
+                  {business.name[0]}
+                </div>
+              )}
+              <span className="text-white font-semibold text-base">{business.name}</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-blue-200">
-              <Lock className="h-3.5 w-3.5" />
+               <Lock className="h-3.5 w-3.5" />
               <span>Secured by Interswitch</span>
             </div>
           </div>
@@ -521,26 +467,6 @@ export const PayPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-start">
             {/* ── LEFT: product info ── */}
             <div className="lg:col-span-2 text-white">
-              {/* Business */}
-              <div className="flex items-center gap-3 mb-6">
-                {business.logo ? (
-                  <img
-                    src={business.logo}
-                    alt={business.name}
-                    className="w-10 h-10 rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white text-sm">
-                    {business.name[0]}
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-blue-300 uppercase tracking-widest font-medium">
-                    Paying to
-                  </p>
-                  <p className="font-semibold">{business.name}</p>
-                </div>
-              </div>
 
               {/* Product card */}
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
