@@ -20,18 +20,18 @@ import {
   Receipt,
   AlertTriangle,
 } from "lucide-react";
-import { transactionService } from "../services/api";
-import { useAuthStore } from "../stores/auth.store";
-import { formatCurrency, formatDateTime, formatDate, cn } from "../lib/utils";
-import { LoadingSpinner, StatusBadge } from "../components/ui";
+import { transactionService } from "../../services/api";
+import { useAuthStore } from "../../stores/auth.store";
+import { formatCurrency, formatDateTime, formatDate, cn } from "../../lib/utils";
+import { LoadingSpinner, StatusBadge } from "../../components/ui";
 import type {
   Transaction,
   TransactionCustomer,
   TransactionProduct,
-} from "../types";
+} from "../../types";
 import routes from "@/constants/routes";
 
-// ─── Copy-to-clipboard mini button ───────────────────────────────
+// ─── Copy-to-clipboard ───────────────────────────────
 const CopyBtn: React.FC<{ text: string }> = ({ text }) => {
   const [copied, setCopied] = React.useState(false);
   return (
@@ -169,7 +169,7 @@ const TimelineItem: React.FC<{
 );
 
 // ─── Main component ───────────────────────────────────────────────
-const TransactionDetailsPage: React.FC = () => {
+export const TransactionDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { business } = useAuthStore();
@@ -694,5 +694,3 @@ const TransactionDetailsPage: React.FC = () => {
     </div>
   );
 };
-
-export default TransactionDetailsPage;

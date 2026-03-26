@@ -5,12 +5,16 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 15000,
+  timeout: 30000,
 });
 
 // Request interceptor — attach token
 api.interceptors.request.use(
   (config) => {
+    if (config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    }
+
     const token = localStorage.getItem("accessToken");
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
@@ -60,9 +64,17 @@ export const authService = {
   login: (data: { email: string; password: string }) =>
     api.post("/auth/login", data),
   logout: () => api.post("/auth/logout"),
-  getMe: () => api.get("/auth/me"),
   refresh: (refreshToken: string) =>
     api.post("/auth/refresh", { refreshToken }),
+};
+
+// ==================== PROFILE ====================
+export const profileService = {
+  getMe: () => api.get("/profile/me"),
+  updateProfile: (data: FormData | Record<string, unknown>) =>
+    api.put("/profile/me", data),
+  updateBusiness: (data: FormData | Record<string, unknown>) =>
+    api.put("/profile/business", data),
 };
 
 // ==================== PRODUCTS ====================
@@ -110,7 +122,6 @@ export const analyticsService = {
   dashboard: () => api.get("/analytics/dashboard"),
   revenue: (period?: string) =>
     api.get("/analytics/revenue", { params: { period } }),
-  subscriptions: () => api.get("/analytics/subscriptions"),
 };
 
 // ==================== PAYMENT LINKS ====================
@@ -131,14 +142,14 @@ export const apiTokenService = {
   revoke: (id: string) => api.delete(`/api-tokens/${id}`),
 };
 
-// ==================== PUBLIC PAY (no auth) ====================
+// ==================== PAY (no auth) ====================
 export const payService = {
   getLink: (slug: string) => api.get(`/payment-links/${slug}`),
   initiateCardPayment: (data: {
     cardDetails: DebitCard;
     amount: string | number;
     customerDetails: Customer;
-    paymentType: "one_time" | "recurring";
+    paymentType: "one_time";
     businessId: string;
     productId: string;
   }) => api.post(`/pay/card-payment`, data),

@@ -5,30 +5,26 @@ import {
   Package,
   Users,
   CreditCard,
-  Repeat2,
   Link2,
-  Key,
   BarChart3,
   Settings,
   LogOut,
   Menu,
-  X,
-  ChevronDown,
+       ChevronDown,
   Bell,
   Zap,
 } from "lucide-react";
 import { cn, getInitials } from "../lib/utils";
 import { useAuthStore } from "../stores/auth.store";
 import { authService } from "../services/api";
+import { capitalizeFirstLetters } from "@/utils/utils";
 
 const NAV = [
   { label: "Overview", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Products", icon: Package, to: "/dashboard/products" },
   { label: "Customers", icon: Users, to: "/dashboard/customers" },
   { label: "Transactions", icon: CreditCard, to: "/dashboard/transactions" },
-  // { label: 'Subscriptions', icon: Repeat2, to: '/dashboard/subscriptions' },
   { label: "Payment Links", icon: Link2, to: "/dashboard/payment-links" },
-  // { label: 'API Tokens', icon: Key, to: '/dashboard/api-tokens' },
   { label: "Analytics", icon: BarChart3, to: "/dashboard/analytics" },
   { label: "Settings", icon: Settings, to: "/dashboard/settings" },
 ];
@@ -61,7 +57,7 @@ export const DashboardLayout: React.FC = () => {
         <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
           <Zap className="h-4 w-4 text-white" />
         </div>
-        <span className="text-lg font-bold tracking-tight">BillFlow</span>
+        <span className="text-lg font-bold tracking-tight">PayCycle</span>
       </div>
 
       {/* Business badge */}
@@ -71,7 +67,7 @@ export const DashboardLayout: React.FC = () => {
             Workspace
           </p>
           <p className="text-sm text-white font-semibold mt-0.5 truncate">
-            {business.name}
+            {capitalizeFirstLetters(business?.name)}
           </p>
         </div>
       )}

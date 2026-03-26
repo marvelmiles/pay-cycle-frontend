@@ -9,6 +9,7 @@ interface AuthStore {
   refreshToken: string | null;
   isAuthenticated: boolean;
   setAuth: (data: { user: User; business: Business | null; accessToken: string; refreshToken: string }) => void;
+  updateUser: (user: User) => void;
   updateBusiness: (business: Business) => void;
   logout: () => void;
 }
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ user, business, accessToken, refreshToken, isAuthenticated: true });
       },
 
+      updateUser: (user) => set({ user }),
       updateBusiness: (business) => set({ business }),
 
       logout: () => {

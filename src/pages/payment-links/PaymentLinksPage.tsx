@@ -3,35 +3,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
   Link2,
-  Key,
   Copy,
   Check,
-  Eye,
-  EyeOff,
   Trash2,
   ExternalLink,
 } from "lucide-react";
 import {
   paymentLinkService,
-  apiTokenService,
   productService,
-} from "../services/api";
+} from "../../services/api";
 import {
   Button,
   Card,
-  CardHeader,
   CardBody,
   StatusBadge,
   Table,
   Modal,
   Input,
   Textarea,
-  Select,
   EmptyState,
   LoadingSpinner,
-} from "../components/ui";
-import { formatCurrency, formatDate, formatDateTime } from "../lib/utils";
-import type { PaymentLink, ApiToken, Product } from "../types";
+} from "../../components/ui";
+import { formatCurrency, formatDate } from "../../lib/utils";
+import type { PaymentLink, Product } from "../../types";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +33,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // ===========================
 // SHARED: COPY BUTTON
 // ===========================
-function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(text);
@@ -85,7 +79,6 @@ export const PaymentLinksPage: React.FC = () => {
     queryFn: () => paymentLinkService.list().then((r) => r.data),
   });
 
-  // Load products for the dropdown
   const { data: productsData } = useQuery({
     queryKey: ["products", 1],
     queryFn: () =>
@@ -271,7 +264,6 @@ export const PaymentLinksPage: React.FC = () => {
           onSubmit={handleSubmit((d) => createMutation.mutate(d))}
           className="space-y-4"
         >
-          {/* Product selector — REQUIRED */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">
               Product <span className="text-red-500">*</span>
@@ -312,12 +304,7 @@ export const PaymentLinksPage: React.FC = () => {
                   )}
                 </span>
               </div>
-              <p className="text-blue-600 text-xs mt-0.5 capitalize">
-                {selectedProduct.type.replace("_", " ")} payment
-                {selectedProduct.trialDays
-                  ? ` · ${selectedProduct.trialDays}-day trial`
-                  : ""}
-              </p>
+             
             </div>
           )}
 
@@ -368,238 +355,6 @@ export const PaymentLinksPage: React.FC = () => {
               loading={isSubmitting || createMutation.isPending}
             >
               Create Link
-            </Button>
-          </div>
-        </form>
-      </Modal>
-    </div>
-  );
-};
-
-// ===========================
-// API TOKENS PAGE
-// ===========================
-const tokenSchema = z.object({
-  name: z.string().min(1, "Required"),
-  type: z.enum(["live", "test"]),
-});
-type TokenForm = z.infer<typeof tokenSchema>;
-
-export const ApiTokensPage: React.FC = () => {
-  const qc = useQueryClient();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [newToken, setNewToken] = useState<string | null>(null);
-  const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["api-tokens"],
-    queryFn: () => apiTokenService.list().then((r) => r.data),
-  });
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<TokenForm>({
-    resolver: zodResolver(tokenSchema),
-    defaultValues: { type: "test" },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (d: TokenForm) => apiTokenService.create(d),
-    onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ["api-tokens"] });
-      setNewToken(res.data.data.token);
-      setModalOpen(false);
-      reset();
-    },
-  });
-
-  const revokeMutation = useMutation({
-    mutationFn: (id: string) => apiTokenService.revoke(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["api-tokens"] }),
-  });
-
-  const maskToken = (t: string) =>
-    `${t?.slice(0, 8)}${"•".repeat(20)}${t?.slice(-4)}`;
-
-  const columns = [
-    {
-      key: "name",
-      header: "Name",
-      render: (t: ApiToken) => (
-        <span className="font-medium text-gray-900">{t.name}</span>
-      ),
-    },
-    {
-      key: "type",
-      header: "Environment",
-      render: (t: ApiToken) => (
-        <span
-          className={`text-xs font-medium px-2 py-1 rounded-full ${t.type === "live" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-        >
-          {t.type}
-        </span>
-      ),
-    },
-    {
-      key: "token",
-      header: "Token",
-      render: (t: ApiToken) => (
-        <div className="flex items-center gap-1">
-          <span className="font-mono text-xs text-gray-600">
-            {showTokens[t._id] ? t.token : maskToken(t.token)}
-          </span>
-          <button
-            onClick={() => setShowTokens((p) => ({ ...p, [t._id]: !p[t._id] }))}
-            className="p-1 text-gray-400 hover:text-gray-600"
-          >
-            {showTokens[t._id] ? (
-              <EyeOff className="h-3.5 w-3.5" />
-            ) : (
-              <Eye className="h-3.5 w-3.5" />
-            )}
-          </button>
-          <CopyButton text={t.token} />
-        </div>
-      ),
-    },
-    {
-      key: "lastUsed",
-      header: "Last Used",
-      render: (t: ApiToken) => (
-        <span className="text-gray-500 text-xs">
-          {t.lastUsedAt ? formatDateTime(t.lastUsedAt) : "Never"}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (t: ApiToken) => (
-        <StatusBadge status={t.isActive ? "active" : "cancelled"} />
-      ),
-    },
-    {
-      key: "revoke",
-      header: "",
-      render: (t: ApiToken) =>
-        t.isActive ? (
-          <button
-            onClick={() => revokeMutation.mutate(t._id)}
-            className="text-xs text-red-500 hover:text-red-700 font-medium"
-          >
-            Revoke
-          </button>
-        ) : null,
-    },
-  ];
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">API Tokens</h1>
-          <p className="text-gray-500 mt-1">
-            Manage access tokens for SDK and API integration
-          </p>
-        </div>
-        <Button
-          leftIcon={<Plus className="h-4 w-4" />}
-          onClick={() => setModalOpen(true)}
-        >
-          Generate Token
-        </Button>
-      </div>
-
-      {newToken && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <p className="text-sm font-semibold text-green-800 mb-1">
-            🎉 Token created — copy it now, it won't be shown again
-          </p>
-          <div className="flex items-center gap-2 bg-white border border-green-200 rounded-lg px-3 py-2">
-            <span className="font-mono text-sm text-gray-800 flex-1 truncate">
-              {newToken}
-            </span>
-            <CopyButton text={newToken} />
-          </div>
-          <button
-            onClick={() => setNewToken(null)}
-            className="mt-2 text-xs text-green-700 underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      <Card>
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : data?.data?.length === 0 ? (
-          <CardBody>
-            <EmptyState
-              title="No API tokens"
-              description="Generate a token to integrate BillFlow SDK into your application."
-              icon={<Key className="h-12 w-12" />}
-              action={
-                <Button
-                  leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={() => setModalOpen(true)}
-                >
-                  Generate Token
-                </Button>
-              }
-            />
-          </CardBody>
-        ) : (
-          <Table columns={columns} data={data?.data || []} />
-        )}
-      </Card>
-
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Generate API Token"
-      >
-        <form
-          onSubmit={handleSubmit((d) => createMutation.mutate(d))}
-          className="space-y-4"
-        >
-          <Input
-            label="Token name"
-            placeholder="e.g. Production Server"
-            error={errors.name?.message}
-            {...register("name")}
-          />
-          <Select
-            label="Environment"
-            options={[
-              { value: "test", label: "Test" },
-              { value: "live", label: "Live" },
-            ]}
-            error={errors.type?.message}
-            {...register("type")}
-          />
-          <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-            ⚠️ Live tokens process real payments. Use test tokens during
-            development.
-          </p>
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={() => setModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              loading={isSubmitting || createMutation.isPending}
-            >
-              Generate
             </Button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +11,6 @@ import {
   XCircle,
   Loader2,
   CreditCard,
-  Repeat2,
   User,
   Mail,
   Phone,
@@ -21,9 +20,9 @@ import {
   KeyRound,
   ArrowRight,
 } from "lucide-react";
-import { payService } from "../services/api";
-import { formatCurrency } from "../lib/utils";
-import { Button, OtpInput } from "../components/ui";
+import { payService } from "../../services/api";
+import { formatCurrency } from "../../lib/utils";
+import { Button, OtpInput } from "../../components/ui";
 import toast from "react-hot-toast";
 import {
   ConfirmPaymentProps,
@@ -40,7 +39,7 @@ interface ProductData {
   description?: string;
   price: number;
   currency: string;
-  type: "one_time" | "recurring";
+  type: "one_time";
   interval?: string;
   trialDays?: number;
   features?: string[];
@@ -63,22 +62,24 @@ interface PaymentLinkData {
   maxUses?: number;
   useCount: number;
 }
-interface InterswitchConfig {
-  merchantCode: string;
-  payableCode: string;
-  transactionReference: string;
-  amount: number;
-  currencyCode: string;
-  customerEmail: string;
-  customerName: string;
-  redirectUrl: string;
-  siteName: string;
-  mode: string;
-}
+
+// interface InterswitchConfig {
+//   merchantCode: string;
+//   payableCode: string;
+//   transactionReference: string;
+//   amount: number;
+//   currencyCode: string;
+//   customerEmail: string;
+//   customerName: string;
+//   redirectUrl: string;
+//   siteName: string;
+//   mode: string;
+// }
 
 // ─────────────────────────────────────────────
 // SCHEMAS
 // ─────────────────────────────────────────────
+
 const detailsSchema = z.object({
   firstName: z.string().min(1, "Required"),
   lastName: z.string().min(1, "Required"),
@@ -332,25 +333,35 @@ export const PayPage: React.FC = () => {
       .finally(() => setPageLoading(false));
   }, [id]);
 
+  console.log(linkData);
+  console.log(pageError);
+
   // — forms
   const details = useForm<DetailsForm>({
     resolver: zodResolver(detailsSchema),
     defaultValues: {
-      firstName: "Marvellous",
-      lastName: "Akinrinmola",
-      email: "marvellousabidemi2@gmail.com",
-      phone: "09162670753",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
     },
   });
   const card = useForm<CardForm>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
-      cvv: "111",
-      expiry: "03/50",
-      cardNumber: "5060990580000217499",
-      cardPin: "1111",
+      cvv: "",
+      expiry: "",
+      cardNumber: "",
+      cardPin: "",
     },
   });
+
+  // {
+  //     cvv: "111",
+  //     expiry: "03/50",
+  //     cardNumber: "5060990580000217499",
+  //     cardPin: "1111",
+  //   },
 
   // ── LOADING / ERROR states ──────────────────
   if (pageLoading)
@@ -378,7 +389,6 @@ export const PayPage: React.FC = () => {
     );
 
   const { product, business } = linkData;
-  const isRecurring = product.type === "recurring";
 
   const values = details.getValues();
 
@@ -398,7 +408,7 @@ export const PayPage: React.FC = () => {
     setPayError("");
     try {
       const res = await payService.initiateCardPayment({
-        paymentType: product.type,
+        paymentType: "one_time",
         productId: product._id,
         businessId: business._id,
         cardDetails: {
@@ -498,7 +508,7 @@ export const PayPage: React.FC = () => {
               <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Zap className="h-4 w-4 text-white" />
               </div>
-              <span className="text-white font-semibold text-sm">BillFlow</span>
+              <span className="text-white font-semibold text-sm">PayCycle</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-blue-200">
               <Lock className="h-3.5 w-3.5" />
@@ -534,18 +544,7 @@ export const PayPage: React.FC = () => {
 
               {/* Product card */}
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
-                <div
-                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3 ${isRecurring ? "bg-purple-500/30 text-purple-200" : "bg-blue-500/30 text-blue-200"}`}
-                >
-                  {isRecurring ? (
-                    <Repeat2 className="h-3.5 w-3.5" />
-                  ) : (
-                    <CreditCard className="h-3.5 w-3.5" />
-                  )}
-                  {isRecurring
-                    ? `Recurring · ${product.interval}`
-                    : "One-time payment"}
-                </div>
+
 
                 <h2 className="text-xl font-bold text-white">{product.name}</h2>
                 {(linkData.description || product.description) && (
@@ -558,11 +557,7 @@ export const PayPage: React.FC = () => {
                   <span className="text-3xl font-bold">
                     {formatCurrency(product.price, product.currency)}
                   </span>
-                  {isRecurring && (
-                    <span className="text-blue-300 text-sm mb-0.5">
-                      /{product.interval}
-                    </span>
-                  )}
+
                 </div>
                 {product.trialDays ? (
                   <p className="text-xs text-green-300 mt-1">
@@ -703,18 +698,10 @@ export const PayPage: React.FC = () => {
                           <span className="text-gray-600">{product.name}</span>
                           <span className="font-semibold text-gray-900">
                             {formatCurrency(product.price, product.currency)}
-                            {isRecurring && (
-                              <span className="text-xs text-gray-400 font-normal ml-1">
-                                /{product.interval}
-                              </span>
-                            )}
+
                           </span>
                         </div>
-                        {isRecurring && (
-                          <p className="text-xs text-gray-400 mt-1">
-                            Billed {product.interval}. Cancel anytime.
-                          </p>
-                        )}
+
                       </div>
 
                       <Button
@@ -938,11 +925,6 @@ export const PayPage: React.FC = () => {
                             <p className="text-xs text-gray-500">Total due</p>
                             <p className="text-xl font-bold text-gray-900">
                               {formatCurrency(product.price, product.currency)}
-                              {isRecurring && (
-                                <span className="text-sm text-gray-400 font-normal ml-1">
-                                  /{product.interval}
-                                </span>
-                              )}
                             </p>
                           </div>
                           <div className="flex items-center gap-1 text-xs text-gray-400">

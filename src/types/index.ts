@@ -4,12 +4,14 @@ export interface User {
   firstName: string;
   lastName: string;
   role: "business_owner" | "admin" | "developer";
+  image?: string;
 }
 
 export interface Business {
   id: string;
   name: string;
   slug: string;
+  logo?: string;
   settings?: {
     currency: string;
     timezone: string;

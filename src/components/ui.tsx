@@ -625,7 +625,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
     pasted.split("").forEach((ch, idx) => {
       next[idx] = ch;
     });
-    onChange(next);
+    onChange(next.join(""));
     // focus last filled or next empty
     const lastIdx = Math.min(pasted.length, OTP_LENGTH - 1);
     focus(lastIdx);

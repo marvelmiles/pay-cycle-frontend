@@ -2,18 +2,18 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./stores/auth.store";
 import { DashboardLayout } from "./components/DashboardLayout";
-import { LoginPage, RegisterPage } from "./pages/Auth";
-import { DashboardPage } from "./pages/Dashboard";
-import { ProductsPage } from "./pages/Products";
-import {
-  CustomersPage,
-  TransactionsPage,
-  SubscriptionsPage,
-} from "./pages/CustomersTxSubs";
-import { PaymentLinksPage, ApiTokensPage } from "./pages/PaymentLinksTokens";
-import { AnalyticsPage, SettingsPage } from "./pages/AnalyticsSettings";
-import { PayPage } from "./pages/PayPage";
-import TransactionDetailsPage from "./pages/TransactionDetailsPage";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { RegisterPage } from "./pages/auth/RegisterPage";
+import { DashboardPage } from "./pages/overview/DashboardPage";
+import { ProductsPage } from "./pages/products/ProductsPage";
+import { CustomersPage } from "./pages/customers/CustomersPage";
+import { TransactionsPage } from "./pages/transactions/TransactionsPage";
+import { TransactionDetailsPage } from "./pages/transactions/TransactionDetailsPage";
+import { SubscriptionsPage } from "./pages/subscriptions/SubscriptionsPage";
+import { PaymentLinksPage } from "./pages/payment-links/PaymentLinksPage";
+import { AnalyticsPage } from "./pages/analytics/AnalyticsPage";
+import { SettingsPage } from "./pages/settings/SettingsPage";
+import { PayPage } from "./pages/checkout/PayPage";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -72,7 +72,6 @@ const App: React.FC = () => {
           <Route path="transactions/:id" element={<TransactionDetailsPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
           <Route path="payment-links" element={<PaymentLinksPage />} />
-          <Route path="api-tokens" element={<ApiTokensPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

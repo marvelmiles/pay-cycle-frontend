@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Package, MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { productService } from "../services/api";
+import { productService } from "../../services/api";
 import {
   Button,
   Card,
@@ -12,13 +12,12 @@ import {
   Pagination,
   Modal,
   Input,
-  Select,
   Textarea,
   EmptyState,
   LoadingSpinner,
-} from "../components/ui";
-import { formatCurrency, formatDate } from "../lib/utils";
-import type { Product } from "../types";
+} from "../../components/ui";
+import { formatCurrency, formatDate } from "../../lib/utils";
+import type { Product } from "../../types";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +25,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const schema = z.object({
   name: z.string().min(1, "Required"),
   description: z.string().optional(),
-  type: z.enum(["one_time", "recurring"]),
   price: z.coerce.number().min(1, "Price must be > 0"),
   currency: z.string().default("NGN"),
   interval: z.enum(["daily", "weekly", "monthly", "yearly"]).optional(),
@@ -55,14 +53,12 @@ export const ProductsPage: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<ProductForm>({
     resolver: zodResolver(schema),
-    defaultValues: { type: "one_time", currency: "NGN" },
+    defaultValues: { currency: "NGN" },
   });
-
-  const type = watch("type");
 
   const openCreate = () => {
     setEditing(null);
-    reset({ type: "one_time", currency: "NGN" });
+    reset({ currency: "NGN" });
     setModalOpen(true);
   };
   const openEdit = (p: Product) => {
@@ -70,11 +66,8 @@ export const ProductsPage: React.FC = () => {
     reset({
       name: p.name,
       description: p.description,
-      type: p.type,
       price: p.price / 100,
       currency: p.currency,
-      interval: p.interval,
-      trialDays: p.trialDays,
       features: p.features.join("\n"),
     });
     setModalOpen(true);
@@ -85,6 +78,7 @@ export const ProductsPage: React.FC = () => {
       const payload = {
         ...data,
         price: Math.round(data.price * 100),
+        type: "one_time",
         features: data.features
           ? data.features.split("\n").filter(Boolean)
           : [],
@@ -117,15 +111,6 @@ export const ProductsPage: React.FC = () => {
             </p>
           )}
         </div>
-      ),
-    },
-    {
-      key: "type",
-      header: "Type",
-      render: (p: Product) => (
-        <span className="capitalize text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-          {p.type.replace("_", " ")}
-        </span>
       ),
     },
     {
@@ -268,45 +253,16 @@ export const ProductsPage: React.FC = () => {
             placeholder="What does this product include?"
             {...register("description")}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="Type"
-              options={[
-                { value: "one_time", label: "One-time" },
-                { value: "recurring", label: "Recurring" },
-              ]}
-              error={errors.type?.message}
-              {...register("type")}
-            />
-            <Input
-              label={`Price (${watch("currency") || "NGN"})`}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              error={errors.price?.message}
-              {...register("price")}
-            />
-          </div>
-          {type === "recurring" && (
-            <div className="grid grid-cols-2 gap-3">
-              <Select
-                label="Billing interval"
-                options={[
-                  { value: "daily", label: "Daily" },
-                  { value: "weekly", label: "Weekly" },
-                  { value: "monthly", label: "Monthly" },
-                  { value: "yearly", label: "Yearly" },
-                ]}
-                {...register("interval")}
-              />
-              <Input
-                label="Trial days"
-                type="number"
-                placeholder="0"
-                {...register("trialDays")}
-              />
-            </div>
-          )}
+
+          <Input
+            label={`Price (${watch("currency") || "NGN"})`}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            error={errors.price?.message}
+            {...register("price")}
+          />
+
           <Textarea
             label="Features (one per line)"
             placeholder={"Unlimited projects\nPriority support\nCustom domain"}
