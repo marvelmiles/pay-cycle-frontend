@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +11,6 @@ import {
   XCircle,
   Loader2,
   CreditCard,
-  Repeat2,
   User,
   Mail,
   Phone,
@@ -63,22 +62,24 @@ interface PaymentLinkData {
   maxUses?: number;
   useCount: number;
 }
-interface InterswitchConfig {
-  merchantCode: string;
-  payableCode: string;
-  transactionReference: string;
-  amount: number;
-  currencyCode: string;
-  customerEmail: string;
-  customerName: string;
-  redirectUrl: string;
-  siteName: string;
-  mode: string;
-}
+
+// interface InterswitchConfig {
+//   merchantCode: string;
+//   payableCode: string;
+//   transactionReference: string;
+//   amount: number;
+//   currencyCode: string;
+//   customerEmail: string;
+//   customerName: string;
+//   redirectUrl: string;
+//   siteName: string;
+//   mode: string;
+// }
 
 // ─────────────────────────────────────────────
 // SCHEMAS
 // ─────────────────────────────────────────────
+
 const detailsSchema = z.object({
   firstName: z.string().min(1, "Required"),
   lastName: z.string().min(1, "Required"),
