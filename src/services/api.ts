@@ -3,7 +3,7 @@ import { Customer } from "@/types/user";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
 });
@@ -133,7 +133,7 @@ export const apiTokenService = {
 
 // ==================== PUBLIC PAY (no auth) ====================
 export const payService = {
-  getLink: (slug: string) => api.get(`/public/pay/${slug}`),
+  getLink: (slug: string) => api.get(`/payment-links/${slug}`),
   initiateCardPayment: (data: {
     cardDetails: DebitCard;
     amount: string | number;

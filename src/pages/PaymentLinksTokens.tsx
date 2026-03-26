@@ -146,11 +146,11 @@ export const PaymentLinksPage: React.FC = () => {
       render: (l: PaymentLink) => (
         <div className="flex items-center gap-1">
           <span className="text-xs text-blue-600 font-mono bg-blue-50 px-2 py-0.5 rounded truncate max-w-[180px]">
-            /pay/{l.slug}
+            /pay/{l._id}
           </span>
-          <CopyButton text={`${baseUrl}/pay/${l.slug}`} />
+          <CopyButton text={`${baseUrl}/pay/${l._id}`} />
           <a
-            href={`/pay/${l.slug}`}
+            href={`/pay/${l._id}`}
             target="_blank"
             rel="noreferrer"
             className="p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50"

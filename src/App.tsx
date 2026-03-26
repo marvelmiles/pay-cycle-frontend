@@ -54,7 +54,7 @@ const App: React.FC = () => {
         />
 
         {/* Public payment pages — NO auth needed */}
-        <Route path="/pay/:slug" element={<PayPage />} />
+        <Route path="/pay/:id" element={<PayPage />} />
 
         {/* Protected dashboard */}
         <Route

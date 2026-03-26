@@ -297,7 +297,7 @@ const RedirectButton: React.FC<{
 );
 
 export const PayPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { id } = useParams<{ id: string }>();
 
   const [linkData, setLinkData] = useState<PaymentLinkData | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
@@ -322,15 +322,15 @@ export const PayPage: React.FC = () => {
 
   // — load link
   useEffect(() => {
-    if (!slug) return;
+    if (!id) return;
     payService
-      .getLink(slug)
+      .getLink(id)
       .then((r) => setLinkData(r.data.data))
       .catch((e) =>
         setPageError(e.response?.data?.message || "Payment link not found"),
       )
       .finally(() => setPageLoading(false));
-  }, [slug]);
+  }, [id]);
 
   // — forms
   const details = useForm<DetailsForm>({
@@ -386,7 +386,7 @@ export const PayPage: React.FC = () => {
 
   // — step 1 submit: hit backend to initiate, get Interswitch config
   const onDetailsSubmit = async (data: DetailsForm) => {
-    if (!slug) return;
+    if (!id) return;
 
     setCustomer(data);
     setStep(2);

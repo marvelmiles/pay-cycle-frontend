@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AreaChart,
@@ -11,7 +11,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { analyticsService } from "../services/api";
+import api, { analyticsService } from "../services/api";
 import {
   Card,
   CardHeader,
@@ -227,13 +227,35 @@ export const SettingsPage: React.FC = () => {
   const { user, business } = useAuthStore();
   const [saved, setSaved] = useState(false);
 
+  const [file, setFile] = useState(null);
+
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
+  useEffect(() => {
+    if (file) {
+      console.log(file);
+
+      const formData = new FormData();
+
+      formData.append("image", file);
+
+      formData.append("firstName", "d");
+      formData.append("lastName", "ss");
+
+      api.put("/profile/business", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    }
+  }, [file]);
+
   return (
     <div className="p-6 space-y-6 max-w-3xl">
+      <input type="file" onChange={(e) => setFile(e.target.files?.[0])} />
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500 mt-1">
