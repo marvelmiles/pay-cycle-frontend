@@ -10,9 +10,10 @@ import {
   Settings,
   LogOut,
   Menu,
-       ChevronDown,
+  ChevronDown,
   Bell,
   Zap,
+  Wallet,
 } from "lucide-react";
 import { cn, getInitials } from "../lib/utils";
 import { useAuthStore } from "../stores/auth.store";
@@ -25,6 +26,7 @@ const NAV = [
   { label: "Customers", icon: Users, to: "/dashboard/customers" },
   { label: "Transactions", icon: CreditCard, to: "/dashboard/transactions" },
   { label: "Payment Links", icon: Link2, to: "/dashboard/payment-links" },
+  { label: "Wallet", icon: Wallet, to: "/dashboard/wallet" },
   { label: "Analytics", icon: BarChart3, to: "/dashboard/analytics" },
   { label: "Settings", icon: Settings, to: "/dashboard/settings" },
 ];
@@ -142,18 +144,22 @@ export const DashboardLayout: React.FC = () => {
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-2">
-            <button className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100">
-              <Bell className="h-5 w-5" />
-            </button>
-
             <div className="relative">
               <button
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-semibold">
-                  {user ? getInitials(user.firstName, user.lastName) : "U"}
-                </div>
+                {user?.image ? (
+                  <img
+                    src={user?.image}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-semibold"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-semibold">
+                    {user ? getInitials(user.firstName, user.lastName) : "U"}
+                  </div>
+                )}
+
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-medium text-gray-900">
                     {user?.firstName} {user?.lastName}

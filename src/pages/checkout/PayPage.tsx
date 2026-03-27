@@ -224,7 +224,6 @@ const CardBadges = () => (
   </div>
 );
 
-
 const RedirectButton: React.FC<{
   onClick: () => void;
   text?: string;
@@ -278,9 +277,6 @@ export const PayPage: React.FC = () => {
       .finally(() => setPageLoading(false));
   }, [id]);
 
-  console.log(linkData);
-  console.log(pageError);
-
   // — forms
   const details = useForm<DetailsForm>({
     resolver: zodResolver(detailsSchema),
@@ -291,6 +287,7 @@ export const PayPage: React.FC = () => {
       phone: "",
     },
   });
+
   const card = useForm<CardForm>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
@@ -300,6 +297,13 @@ export const PayPage: React.FC = () => {
       cardPin: "",
     },
   });
+
+  // test master card
+  // 5061050254756707864
+  // 06/26
+  // 111
+  // 1111
+  // 123456
 
   if (pageLoading)
     return (
@@ -404,8 +408,6 @@ export const PayPage: React.FC = () => {
     } catch (err) {
       const error = normalizeError(err);
 
-      console.log(error);
-
       if (error.status === 409) {
         const bool =
           (error.errors?.[0]?.message || "")
@@ -435,7 +437,6 @@ export const PayPage: React.FC = () => {
     />
   );
 
-
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
@@ -443,7 +444,7 @@ export const PayPage: React.FC = () => {
         <header className="border-b border-white/10 backdrop-blur-sm bg-white/5">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {(business.image || business.logo) ? (
+              {business.image || business.logo ? (
                 <img
                   src={business.image || business.logo}
                   alt={business.name}
@@ -454,10 +455,12 @@ export const PayPage: React.FC = () => {
                   {business.name[0]}
                 </div>
               )}
-              <span className="text-white font-semibold text-base">{business.name}</span>
+              <span className="text-white font-semibold text-base">
+                {business.name}
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-blue-200">
-               <Lock className="h-3.5 w-3.5" />
+              <Lock className="h-3.5 w-3.5" />
               <span>Secured by Interswitch</span>
             </div>
           </div>
@@ -467,11 +470,8 @@ export const PayPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-start">
             {/* ── LEFT: product info ── */}
             <div className="lg:col-span-2 text-white">
-
               {/* Product card */}
               <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
-
-
                 <h2 className="text-xl font-bold text-white">{product.name}</h2>
                 {(linkData.description || product.description) && (
                   <p className="mt-1 text-sm text-blue-200 leading-relaxed">
@@ -483,7 +483,6 @@ export const PayPage: React.FC = () => {
                   <span className="text-3xl font-bold">
                     {formatCurrency(product.price, product.currency)}
                   </span>
-
                 </div>
                 {product.trialDays ? (
                   <p className="text-xs text-green-300 mt-1">
@@ -624,10 +623,8 @@ export const PayPage: React.FC = () => {
                           <span className="text-gray-600">{product.name}</span>
                           <span className="font-semibold text-gray-900">
                             {formatCurrency(product.price, product.currency)}
-
                           </span>
                         </div>
-
                       </div>
 
                       <Button
@@ -868,7 +865,7 @@ export const PayPage: React.FC = () => {
                           loadingText="Processing payment..."
                           leftIcon={<Lock className="h-4 w-4" />}
                           className="shadow-lg shadow-blue-600/25"
-                          disabled={!card.formState.isValid}
+                          // disabled={!card.formState.isValid}
                         >
                           Pay {formatCurrency(product.price, product.currency)}{" "}
                           securely

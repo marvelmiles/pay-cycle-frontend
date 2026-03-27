@@ -14,6 +14,7 @@ import { PaymentLinksPage } from "./pages/payment-links/PaymentLinksPage";
 import { AnalyticsPage } from "./pages/analytics/AnalyticsPage";
 import { SettingsPage } from "./pages/settings/SettingsPage";
 import { PayPage } from "./pages/checkout/PayPage";
+import { WalletPage } from "./pages/wallet/Wallet";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -57,6 +58,7 @@ const App: React.FC = () => {
         <Route path="/pay/:id" element={<PayPage />} />
 
         {/* Protected dashboard */}
+
         <Route
           path="/dashboard"
           element={
@@ -74,6 +76,7 @@ const App: React.FC = () => {
           <Route path="payment-links" element={<PaymentLinksPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         {/* Fallback */}

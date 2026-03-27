@@ -11,11 +11,17 @@ export interface Business {
   id: string;
   name: string;
   slug: string;
-  logo?: string;
+  image?: string;
   settings?: {
     currency: string;
     timezone: string;
     webhookUrl?: string;
+  };
+  availableBalance: number;
+  bank: {
+    name: string;
+    accountNumber: string;
+    accountName: string;
   };
 }
 

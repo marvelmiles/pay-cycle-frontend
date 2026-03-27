@@ -16,6 +16,7 @@ api.interceptors.request.use(
     }
 
     const token = localStorage.getItem("accessToken");
+
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -43,7 +44,7 @@ api.interceptors.response.use(
       } catch {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        // window.location.href = "/login";
       }
     }
     return Promise.reject(error);
@@ -73,8 +74,8 @@ export const profileService = {
   getMe: () => api.get("/profile/me"),
   updateProfile: (data: FormData | Record<string, unknown>) =>
     api.put("/profile/me", data),
-  updateBusiness: (data: FormData | Record<string, unknown>) =>
-    api.put("/profile/business", data),
+  updateBusiness: (id: string, data: FormData | Record<string, unknown>) =>
+    api.put(`/profile/business/${id}`, data),
 };
 
 // ==================== PRODUCTS ====================
@@ -162,4 +163,14 @@ export const payService = {
     api.get("/pay/confirm-payment", {
       params: payload,
     }),
+};
+
+export const walletService = {
+  get: (businessId: string) => api.get(`/wallet/${businessId}`),
+  getWithdrawals: (businessId: string, params?: Record<string, unknown>) =>
+    api.get(`/wallet/withdrawals/${businessId}`, { params }),
+  requestWithdrawal: (businessId: string, data: Record<string, unknown>) =>
+    api.post(`/wallet/withdraw/${businessId}`, data),
+  cancelWithdrawal: (id: string, businessId: string) =>
+    api.post(`/wallet/withdraw/${id}/${businessId}/cancel`),
 };

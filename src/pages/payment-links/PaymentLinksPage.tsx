@@ -1,17 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Plus,
-  Link2,
-  Copy,
-  Check,
-  Trash2,
-  ExternalLink,
-} from "lucide-react";
-import {
-  paymentLinkService,
-  productService,
-} from "../../services/api";
+import { Plus, Link2, Copy, Check, Trash2, ExternalLink } from "lucide-react";
+import { paymentLinkService, productService } from "../../services/api";
 import {
   Button,
   Card,
@@ -304,7 +294,6 @@ export const PaymentLinksPage: React.FC = () => {
                   )}
                 </span>
               </div>
-             
             </div>
           )}
 
@@ -319,19 +308,19 @@ export const PaymentLinksPage: React.FC = () => {
             placeholder="What is this payment for?"
             {...register("description")}
           />
-          <Input
+          {/* <Input
             label="Redirect URL after payment (optional)"
             type="url"
             placeholder="https://yoursite.com/thank-you"
             error={errors.redirectUrl?.message}
             {...register("redirectUrl")}
-          />
-          <Input
+          /> */}
+          {/* <Input
             label="Max uses (optional)"
             type="number"
             placeholder="Unlimited"
             {...register("maxUses")}
-          />
+          /> */}
 
           {products.length === 0 && (
             <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
